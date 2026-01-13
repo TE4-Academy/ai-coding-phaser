@@ -3,72 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paint - Ritprogram</title>
+    <title>Paint - Ritprogram v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
     
     <!-- Verktygsfält -->
     <div class="bg-white shadow-md p-4 mb-4">
-        <div class="max-w-6xl mx-auto flex flex-wrap items-center gap-4">
+        <div class="max-w-6xl mx-auto">
             
-            <!-- Färgväljare -->
-            <div class="flex items-center gap-2">
-                <label for="colorPicker" class="text-sm font-medium text-gray-700">Färg:</label>
-                <input 
-                    type="color" 
-                    id="colorPicker" 
-                    value="#000000"
-                    class="w-12 h-10 rounded cursor-pointer border-2 border-gray-300"
-                >
+            <!-- Rad 1: Verktyg -->
+            <div class="flex flex-wrap items-center gap-3 mb-3 pb-3 border-b border-gray-200">
+                <span class="text-sm font-medium text-gray-700">Verktyg:</span>
+                
+                <button id="brushTool" class="tool-btn px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-sm">
+                    🖌️ Pensel
+                </button>
+                <button id="eraserTool" class="tool-btn px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-sm">
+                    🧹 Sudd
+                </button>
+                <button id="rectangleTool" class="tool-btn px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-sm">
+                    ⬜ Kvadrat
+                </button>
+                <button id="circleTool" class="tool-btn px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-sm">
+                    ⭕ Cirkel
+                </button>
+                <button id="triangleTool" class="tool-btn px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-sm">
+                    🔺 Triangel
+                </button>
+                <button id="fillTool" class="tool-btn px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-sm">
+                    🪣 Fyll
+                </button>
             </div>
 
-            <!-- Penselstorlek -->
-            <div class="flex items-center gap-2">
-                <label for="brushSize" class="text-sm font-medium text-gray-700">Storlek:</label>
-                <input 
-                    type="range" 
-                    id="brushSize" 
-                    min="1" 
-                    max="50" 
-                    value="5"
-                    class="w-32"
-                >
-                <span id="brushSizeValue" class="text-sm font-medium text-gray-600 w-8">5px</span>
-            </div>
+            <!-- Rad 2: Inställningar och åtgärder -->
+            <div class="flex flex-wrap items-center gap-4">
+                
+                <!-- Färgväljare -->
+                <div class="flex items-center gap-2">
+                    <label for="colorPicker" class="text-sm font-medium text-gray-700">Färg:</label>
+                    <input 
+                        type="color" 
+                        id="colorPicker" 
+                        value="#000000"
+                        class="w-12 h-10 rounded cursor-pointer border-2 border-gray-300"
+                    >
+                </div>
 
-            <!-- Knappar -->
-            <div class="flex gap-2 ml-auto">
-                <button 
-                    id="undoBtn"
-                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
-                >
-                    Ångra
-                </button>
-                <button 
-                    id="redoBtn"
-                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
-                >
-                    Gör om
-                </button>
-                <button 
-                    id="clearBtn"
-                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                >
-                    Rensa
-                </button>
+                <!-- Penselstorlek -->
+                <div class="flex items-center gap-2">
+                    <label for="brushSize" class="text-sm font-medium text-gray-700">Storlek:</label>
+                    <input 
+                        type="range" 
+                        id="brushSize" 
+                        min="1" 
+                        max="50" 
+                        value="5"
+                        class="w-32"
+                    >
+                    <span id="brushSizeValue" class="text-sm font-medium text-gray-600 w-8">5px</span>
+                </div>
+
+                <!-- Lagerväljare -->
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-gray-700">Lager:</span>
+                    <button id="layer0Btn" class="layer-btn px-3 py-1 bg-blue-500 text-white rounded text-sm">
+                        Lager 0
+                    </button>
+                    <button id="layer1Btn" class="layer-btn px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm">
+                        Lager 1
+                    </button>
+                </div>
+
+                <!-- Knappar -->
+                <div class="flex gap-2 ml-auto">
+                    <button 
+                        id="undoBtn"
+                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+                    >
+                        Ångra
+                    </button>
+                    <button 
+                        id="redoBtn"
+                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+                    >
+                        Gör om
+                    </button>
+                    <button 
+                        id="clearBtn"
+                        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm"
+                    >
+                        Rensa
+                    </button>
+                    <button 
+                        id="saveBtn"
+                        class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition text-sm"
+                    >
+                        💾 Spara
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Canvas-område -->
+ <!-- Canvas-område -->
     <div class="flex-1 flex items-center justify-center p-4">
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden relative" style="width: 800px; height: 600px;">
+            <!-- Lager-system: Flera canvas staplade -->
             <canvas 
-                id="canvas" 
+                id="layer0" 
                 width="800" 
                 height="600"
-                class="cursor-crosshair"
+                class="absolute top-0 left-0 cursor-crosshair z-0"
+            ></canvas>
+            <canvas 
+                id="layer1" 
+                width="800" 
+                height="600"
+                class="absolute top-0 left-0 cursor-crosshair z-10"
+            ></canvas>
+            <!-- Temp canvas för förhandsvisning -->
+            <canvas 
+                id="tempCanvas" 
+                width="800" 
+                height="600"
+                class="absolute top-0 left-0 cursor-crosshair pointer-events-none z-20"
             ></canvas>
         </div>
     </div>
@@ -76,4 +135,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-<!-- hejhej -->

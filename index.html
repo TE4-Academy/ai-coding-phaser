@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paint - Ritprogram</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    
+    <!-- Verktygsfält -->
+    <div class="bg-white shadow-md p-4 mb-4">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center gap-4">
+            
+            <!-- Färgväljare -->
+            <div class="flex items-center gap-2">
+                <label for="colorPicker" class="text-sm font-medium text-gray-700">Färg:</label>
+                <input 
+                    type="color" 
+                    id="colorPicker" 
+                    value="#000000"
+                    class="w-12 h-10 rounded cursor-pointer border-2 border-gray-300"
+                >
+            </div>
+
+            <!-- Penselstorlek -->
+            <div class="flex items-center gap-2">
+                <label for="brushSize" class="text-sm font-medium text-gray-700">Storlek:</label>
+                <input 
+                    type="range" 
+                    id="brushSize" 
+                    min="1" 
+                    max="50" 
+                    value="5"
+                    class="w-32"
+                >
+                <span id="brushSizeValue" class="text-sm font-medium text-gray-600 w-8">5px</span>
+            </div>
+
+            <!-- Knappar -->
+            <div class="flex gap-2 ml-auto">
+                <button 
+                    id="undoBtn"
+                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                    Ångra
+                </button>
+                <button 
+                    id="redoBtn"
+                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                    Gör om
+                </button>
+                <button 
+                    id="clearBtn"
+                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                >
+                    Rensa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas-område -->
+    <div class="flex-1 flex items-center justify-center p-4">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <canvas 
+                id="canvas" 
+                width="800" 
+                height="600"
+                class="cursor-crosshair"
+            ></canvas>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -236,6 +236,7 @@ function startDrawing(e) {
         // Rita en punkt direkt vid klick (buggfix för klick-utan-drag)
         ctx.beginPath();
         ctx.arc(e.offsetX, e.offsetY, currentBrushSize / 2, 0, Math.PI * 2);
+        ctx.fillStyle = currentColor;
         ctx.fill();
     } else if (currentTool === 'fill') {
         // Kör flood fill direkt vid klick

@@ -305,21 +305,33 @@ function setActiveLayer(index) {
 
 /**
  * Normaliserar event-koordinater från både mus och touch
+ * Konverterar CSS-koordinater till canvas interna koordinater
  */
 function getEventCoordinates(e, canvas) {
-    let x, y;
+    const rect = canvas.getBoundingClientRect();
+    let clientX, clientY;
     
     if (e.type.startsWith('touch')) {
         // Touch event
-        const rect = canvas.getBoundingClientRect();
         const touch = e.touches[0] || e.changedTouches[0];
-        x = touch.clientX - rect.left;
-        y = touch.clientY - rect.top;
+        clientX = touch.clientX;
+        clientY = touch.clientY;
     } else {
         // Mouse event
-        x = e.offsetX;
-        y = e.offsetY;
+        clientX = e.clientX;
+        clientY = e.clientY;
     }
+    
+    // Beräkna position relativt canvas
+    const cssX = clientX - rect.left;
+    const cssY = clientY - rect.top;
+    
+    // Skala från CSS-koordinater till canvas interna koordinater
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    let x = cssX * scaleX;
+    let y = cssY * scaleY;
     
     // Validera koordinater
     x = sanitizeCoordinate(x, canvas.width);

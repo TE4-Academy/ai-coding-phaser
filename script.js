@@ -41,6 +41,62 @@ let startY = 0;
 let currentColor = '#000000';
 let currentBrushSize = 5;
 
+// Processing flag för flood fill
+let isProcessing = false;
+
+// ========================================
+// VALIDERING AV ANVÄNDARINPUT
+// ========================================
+
+/**
+ * Validerar och säkrar färgvärde
+ */
+function sanitizeColor(color) {
+    // Kontrollera att det är en giltig hex-färg
+    const hexPattern = /^#[0-9A-Fa-f]{6}$/;
+    if (typeof color === 'string' && hexPattern.test(color)) {
+        return color;
+    }
+    console.warn('Ogiltig färg detekterad, använder standardfärg #000000');
+    return '#000000';
+}
+
+/**
+ * Validerar och säkrar penselstorlek
+ */
+function sanitizeBrushSize(size) {
+    const numSize = Number(size);
+    // Säkerställ att värdet är ett positivt tal mellan 1 och 50
+    if (isNaN(numSize) || numSize < 1 || numSize > 50) {
+        console.warn('Ogiltig penselstorlek detekterad, använder standardstorlek 5');
+        return 5;
+    }
+    return Math.floor(numSize);
+}
+
+/**
+ * Validerar koordinater
+ */
+function sanitizeCoordinate(coord, max) {
+    const numCoord = Number(coord);
+    if (isNaN(numCoord)) return 0;
+    return Math.max(0, Math.min(max, Math.floor(numCoord)));
+}
+
+/**
+ * Säker getter för aktuell färg
+ */
+function getCurrentColor() {
+    return sanitizeColor(currentColor);
+}
+
+/**
+ * Säker getter för aktuell penselstorlek
+ */
+function getCurrentBrushSize() {
+    return sanitizeBrushSize(currentBrushSize);
+}
+
 // ========================================
 // UNDO/REDO SYSTEM - UPPDATERAT FÖR LAGER
 // ========================================
@@ -116,6 +172,41 @@ function updateButtons() {
 }
 
 // ========================================
+// DEBOUNCING OCH LADDNINGSSTATUS
+// ========================================
+
+/**
+ * Visar laddningsindikator
+ */
+function showLoadingIndicator() {
+    // Ändra muspekaren
+    document.body.style.cursor = 'wait';
+    layers.forEach(layer => layer.style.cursor = 'wait');
+    
+    // Disable alla knappar
+    document.querySelectorAll('button').forEach(btn => {
+        btn.disabled = true;
+        btn.classList.add('opacity-50');
+    });
+}
+
+/**
+ * Döljer laddningsindikator
+ */
+function hideLoadingIndicator() {
+    document.body.style.cursor = 'default';
+    layers.forEach(layer => layer.style.cursor = 'crosshair');
+    
+    // Enable alla knappar utom undo/redo (de har egen logik)
+    document.querySelectorAll('button').forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+    });
+    
+    updateButtons(); // Återställ undo/redo status
+}
+
+// ========================================
 // INITIERING
 // ========================================
 
@@ -129,8 +220,8 @@ function initCanvas() {
         // Grundinställningar
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        ctx.strokeStyle = currentColor;
-        ctx.lineWidth = currentBrushSize;
+        ctx.strokeStyle = getCurrentColor();
+        ctx.lineWidth = getCurrentBrushSize();
     });
     
     // Endast lager 0 (bakgrund) får vit bakgrund
@@ -147,6 +238,7 @@ function initCanvas() {
     activeLayerIndex = 0;
     updateButtons();
 }
+
 // ========================================
 // VERKTYGSHANTERING
 // ========================================
@@ -159,15 +251,15 @@ function getActiveContext() {
 }
 
 /**
- * Byter aktivt verktyg
+ * Byter aktivt verktyg med förbättrad visuell feedback
  */
 function setTool(tool) {
     currentTool = tool;
     
-    // Uppdatera UI - markera valt verktyg
+    // Återställ alla knappar
     document.querySelectorAll('.tool-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-500', 'text-white');
-        btn.classList.add('bg-gray-200', 'text-gray-700');
+        btn.classList.remove('bg-blue-600', 'text-white', 'ring-4', 'ring-blue-300', 'shadow-lg', 'scale-105');
+        btn.classList.add('bg-gray-200', 'text-gray-700', 'shadow-sm');
     });
     
     const toolButtons = {
@@ -181,111 +273,151 @@ function setTool(tool) {
     
     const activeBtn = document.getElementById(toolButtons[tool]);
     if (activeBtn) {
-        activeBtn.classList.remove('bg-gray-200', 'text-gray-700');
-        activeBtn.classList.add('bg-blue-500', 'text-white');
+        activeBtn.classList.remove('bg-gray-200', 'text-gray-700', 'shadow-sm');
+        activeBtn.classList.add('bg-blue-600', 'text-white', 'ring-4', 'ring-blue-300', 'shadow-lg', 'scale-105', 'transform');
     }
 }
 
 /**
- * Byter aktivt lager
+ * Byter aktivt lager med förbättrad visuell feedback
  */
 function setActiveLayer(index) {
     activeLayerIndex = index;
     
-    // Uppdatera UI
+    // Återställ alla lagerknappar
     document.querySelectorAll('.layer-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-500', 'text-white');
+        btn.classList.remove('bg-blue-600', 'text-white', 'ring-4', 'ring-blue-300', 'font-bold');
         btn.classList.add('bg-gray-200', 'text-gray-700');
     });
     
     const layerBtn = document.getElementById(`layer${index}Btn`);
     if (layerBtn) {
         layerBtn.classList.remove('bg-gray-200', 'text-gray-700');
-        layerBtn.classList.add('bg-blue-500', 'text-white');
+        layerBtn.classList.add('bg-blue-600', 'text-white', 'ring-4', 'ring-blue-300', 'font-bold');
     }
     
     updateButtons();
 }
 
 // ========================================
-// RITFUNKTIONER
+// TOUCH-STÖD FÖR SURFPLATTOR
 // ========================================
 
 /**
- * Startar ritning/formritning
+ * Normaliserar event-koordinater från både mus och touch
  */
-function startDrawing(e) {
+function getEventCoordinates(e, canvas) {
+    let x, y;
+    
+    if (e.type.startsWith('touch')) {
+        // Touch event
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0] || e.changedTouches[0];
+        x = touch.clientX - rect.left;
+        y = touch.clientY - rect.top;
+    } else {
+        // Mouse event
+        x = e.offsetX;
+        y = e.offsetY;
+    }
+    
+    // Validera koordinater
+    x = sanitizeCoordinate(x, canvas.width);
+    y = sanitizeCoordinate(y, canvas.height);
+    
+    return { x, y };
+}
+
+/**
+ * Unified start-funktion för både mus och touch
+ */
+function handleStart(e) {
+    // Förhindra default touch-beteende (scrollning)
+    if (e.type.startsWith('touch')) {
+        e.preventDefault();
+    }
+    
+    const canvas = layers[activeLayerIndex];
+    const coords = getEventCoordinates(e, canvas);
+    
     const ctx = getActiveContext();
     isDrawing = true;
     
-    // Spara startposition
-    startX = e.offsetX;
-    startY = e.offsetY;
-    lastX = e.offsetX;
-    lastY = e.offsetY;
+    startX = coords.x;
+    startY = coords.y;
+    lastX = coords.x;
+    lastY = coords.y;
     
-    // Hantera verktygsspecifik logik
     if (currentTool === 'brush' || currentTool === 'eraser') {
-        // Sätt rätt composite operation för sudd
         if (currentTool === 'eraser') {
             ctx.globalCompositeOperation = 'destination-out';
         } else {
             ctx.globalCompositeOperation = 'source-over';
         }
         
-        // Rita en punkt direkt vid klick (buggfix för klick-utan-drag)
         ctx.beginPath();
-        ctx.arc(e.offsetX, e.offsetY, currentBrushSize / 2, 0, Math.PI * 2);
-        ctx.fillStyle = currentColor;
+        ctx.arc(coords.x, coords.y, getCurrentBrushSize() / 2, 0, Math.PI * 2);
+        ctx.fillStyle = getCurrentColor();
         ctx.fill();
     } else if (currentTool === 'fill') {
-        // Kör flood fill direkt vid klick
-        floodFill(e.offsetX, e.offsetY);
-        saveState();
-        isDrawing = false; // Fill är en engångsoperation
+        // Kör flood fill asynkront
+        floodFill(coords.x, coords.y).then(() => {
+            saveState();
+        });
+        isDrawing = false;
     }
 }
 
 /**
- * Ritar medan musen rör sig
+ * Unified move-funktion för både mus och touch
  */
-function draw(e) {
+function handleMove(e) {
     if (!isDrawing) return;
+    
+    if (e.type.startsWith('touch')) {
+        e.preventDefault();
+    }
+    
+    const canvas = layers[activeLayerIndex];
+    const coords = getEventCoordinates(e, canvas);
     
     const ctx = getActiveContext();
     
     if (currentTool === 'brush' || currentTool === 'eraser') {
-        // Frihandsritning (samma som innan, men med eraser-stöd)
         ctx.beginPath();
         ctx.moveTo(lastX, lastY);
-        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.lineTo(coords.x, coords.y);
         ctx.stroke();
         
-        [lastX, lastY] = [e.offsetX, e.offsetY];
+        lastX = coords.x;
+        lastY = coords.y;
         
     } else if (['rectangle', 'circle', 'triangle'].includes(currentTool)) {
-        // Förhandsvisning av former på temp canvas
-        drawShapePreview(e.offsetX, e.offsetY);
+        drawShapePreview(coords.x, coords.y);
     }
 }
 
 /**
- * Avslutar ritning
+ * Unified stop-funktion för både mus och touch
  */
-function stopDrawing(e) {
+function handleStop(e) {
     if (!isDrawing) return;
+    
+    if (e.type.startsWith('touch')) {
+        e.preventDefault();
+    }
+    
+    const canvas = layers[activeLayerIndex];
+    const coords = getEventCoordinates(e, canvas);
     
     const ctx = getActiveContext();
     
     if (currentTool === 'brush' || currentTool === 'eraser') {
-        // Återställ composite operation
         ctx.globalCompositeOperation = 'source-over';
         saveState();
         
     } else if (['rectangle', 'circle', 'triangle'].includes(currentTool)) {
-        // Rita slutgiltig form på huvudcanvas
-        drawFinalShape(e.offsetX, e.offsetY);
-        // Rensa temp canvas
+        drawFinalShape(coords.x, coords.y);
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
         saveState();
     }
@@ -305,8 +437,8 @@ function drawShapePreview(currentX, currentY) {
     tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
     
     // Kopiera stil från aktivt lager
-    tempCtx.strokeStyle = currentColor;
-    tempCtx.lineWidth = currentBrushSize;
+    tempCtx.strokeStyle = getCurrentColor();
+    tempCtx.lineWidth = getCurrentBrushSize();
     tempCtx.lineCap = 'round';
     tempCtx.lineJoin = 'round';
     
@@ -363,86 +495,6 @@ function drawShape(ctx, x1, y1, x2, y2) {
 // ========================================
 
 /**
- * Flood fill-algoritm för att fylla ett område
- * Använder stack-baserad approach för att undvika rekursion
- */
-function floodFill(startX, startY) {
-    const ctx = getActiveContext();
-    const canvas = layers[activeLayerIndex];
-    
-    // Hämta bilddata
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    
-    // Omvandla start-koordinater till heltal
-    startX = Math.floor(startX);
-    startY = Math.floor(startY);
-    
-    // Beräkna index i data-array (varje pixel = 4 bytes: R, G, B, A)
-    const startIndex = (startY * canvas.width + startX) * 4;
-    
-    // Hämta ursprungsfärgen vid klickpunkten
-    const startR = data[startIndex];
-    const startG = data[startIndex + 1];
-    const startB = data[startIndex + 2];
-    const startA = data[startIndex + 3];
-    
-    // Omvandla vald färg till RGB
-    const fillColor = hexToRgb(currentColor);
-    
-    // Om färgen redan är samma, gör inget
-    if (startR === fillColor.r && startG === fillColor.g && startB === fillColor.b) {
-        return;
-    }
-    
-    // Stack för att hålla pixlar som ska fyllas
-    const stack = [[startX, startY]];
-    
-    // Besökta pixlar (undvik att processa samma pixel flera gånger)
-    const visited = new Set();
-    
-    while (stack.length > 0) {
-        const [x, y] = stack.pop();
-        
-        // Hoppa över om utanför canvas
-        if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) continue;
-        
-        // Hoppa över om redan besökt
-        const key = `${x},${y}`;
-        if (visited.has(key)) continue;
-        visited.add(key);
-        
-        // Beräkna index
-        const index = (y * canvas.width + x) * 4;
-        
-        // Kontrollera om pixeln har samma färg som startfärgen
-        const r = data[index];
-        const g = data[index + 1];
-        const b = data[index + 2];
-        const a = data[index + 3];
-        
-        if (r !== startR || g !== startG || b !== startB || a !== startA) {
-            continue; // Inte samma färg, hoppa över
-        }
-        
-        // Fyll pixeln med ny färg
-        data[index] = fillColor.r;
-        data[index + 1] = fillColor.g;
-        data[index + 2] = fillColor.b;
-        data[index + 3] = 255; // Full opacitet
-        
-        // Lägg till grannar i stacken
-        stack.push([x + 1, y]);     // Höger
-        stack.push([x - 1, y]);     // Vänster
-        stack.push([x, y + 1]);     // Ner
-        stack.push([x, y - 1]);     // Upp
-    }
-    
-    // Skriv tillbaka modifierad bilddata
-    ctx.putImageData(imageData, 0, 0);
-}
-
-/**
  * Hjälpfunktion: Konvertera hex-färg till RGB
  */
 function hexToRgb(hex) {
@@ -454,19 +506,155 @@ function hexToRgb(hex) {
     } : { r: 0, g: 0, b: 0 };
 }
 
+/**
+ * Optimerad flood fill-algoritm med async processing
+ * Använder requestAnimationFrame för att inte blockera UI
+ */
+async function floodFill(startX, startY) {
+    // Förhindra flera samtidiga fills
+    if (isProcessing) {
+        console.log('Fyllning pågår redan, vänligen vänta...');
+        return;
+    }
+    
+    isProcessing = true;
+    showLoadingIndicator();
+    
+    const ctx = getActiveContext();
+    const canvas = layers[activeLayerIndex];
+    
+    // Hämta bilddata
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    startX = Math.floor(startX);
+    startY = Math.floor(startY);
+    
+    const startIndex = (startY * canvas.width + startX) * 4;
+    
+    const startR = data[startIndex];
+    const startG = data[startIndex + 1];
+    const startB = data[startIndex + 2];
+    const startA = data[startIndex + 3];
+    
+    const fillColor = hexToRgb(getCurrentColor());
+    
+    // Om färgen redan är samma, gör inget
+    if (startR === fillColor.r && startG === fillColor.g && startB === fillColor.b) {
+        isProcessing = false;
+        hideLoadingIndicator();
+        return;
+    }
+    
+    const stack = [[startX, startY]];
+    const visited = new Set();
+    
+    // Process i batches för att inte frysa UI
+    const BATCH_SIZE = 1000;
+    let processedCount = 0;
+    
+    while (stack.length > 0) {
+        // Processa en batch
+        for (let i = 0; i < BATCH_SIZE && stack.length > 0; i++) {
+            const [x, y] = stack.pop();
+            
+            if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) continue;
+            
+            const key = `${x},${y}`;
+            if (visited.has(key)) continue;
+            visited.add(key);
+            
+            const index = (y * canvas.width + x) * 4;
+            
+            const r = data[index];
+            const g = data[index + 1];
+            const b = data[index + 2];
+            const a = data[index + 3];
+            
+            if (r !== startR || g !== startG || b !== startB || a !== startA) {
+                continue;
+            }
+            
+            data[index] = fillColor.r;
+            data[index + 1] = fillColor.g;
+            data[index + 2] = fillColor.b;
+            data[index + 3] = 255;
+            
+            stack.push([x + 1, y]);
+            stack.push([x - 1, y]);
+            stack.push([x, y + 1]);
+            stack.push([x, y - 1]);
+            
+            processedCount++;
+        }
+        
+        // Ge webbläsaren chans att uppdatera UI
+        if (stack.length > 0) {
+            await new Promise(resolve => requestAnimationFrame(resolve));
+        }
+    }
+    
+    // Skriv tillbaka modifierad bilddata
+    ctx.putImageData(imageData, 0, 0);
+    
+    isProcessing = false;
+    hideLoadingIndicator();
+}
+
 // ========================================
 // RENSA CANVAS
 // ========================================
 
 /**
  * Rensar aktivt lager
+ * Lager 0 (bakgrund) fylls med vitt
+ * Övriga lager rensas till transparent
  */
 function clearCanvas() {
     const ctx = getActiveContext();
     const canvas = layers[activeLayerIndex];
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    if (activeLayerIndex === 0) {
+        // Bakgrundslager: fyll med vitt
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+        // Övriga lager: rensa till transparent
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    
     saveState();
+}
+
+// ========================================
+// BEKRÄFTELSEDIALOG FÖR RENSNING
+// ========================================
+
+/**
+ * Visar bekräftelsedialog innan rensning
+ */
+function showClearConfirmation() {
+    const modal = document.getElementById('confirmModal');
+    modal.classList.remove('hidden');
+    
+    // Fokusera på "Nej"-knappen som standard (säkrare)
+    document.getElementById('confirmNo').focus();
+}
+
+/**
+ * Döljer bekräftelsedialogren
+ */
+function hideClearConfirmation() {
+    const modal = document.getElementById('confirmModal');
+    modal.classList.add('hidden');
+}
+
+/**
+ * Hanterar bekräftad rensning
+ */
+function handleConfirmedClear() {
+    clearCanvas();
+    hideClearConfirmation();
 }
 
 // ========================================
@@ -502,15 +690,21 @@ function savePainting() {
 }
 
 // ========================================
-// EVENT LISTENERS - CANVAS
+// EVENT LISTENERS - CANVAS (MUS + TOUCH)
 // ========================================
 
-// Lägg till listeners på alla lager (endast det översta tar emot events)
 layers.forEach(layer => {
-    layer.addEventListener('mousedown', startDrawing);
-    layer.addEventListener('mousemove', draw);
-    layer.addEventListener('mouseup', stopDrawing);
-    layer.addEventListener('mouseleave', stopDrawing);
+    // Mus-events
+    layer.addEventListener('mousedown', handleStart);
+    layer.addEventListener('mousemove', handleMove);
+    layer.addEventListener('mouseup', handleStop);
+    layer.addEventListener('mouseleave', handleStop);
+    
+    // Touch-events
+    layer.addEventListener('touchstart', handleStart, { passive: false });
+    layer.addEventListener('touchmove', handleMove, { passive: false });
+    layer.addEventListener('touchend', handleStop, { passive: false });
+    layer.addEventListener('touchcancel', handleStop, { passive: false });
 });
 
 // ========================================
@@ -519,15 +713,19 @@ layers.forEach(layer => {
 
 // Färgväljare
 document.getElementById('colorPicker').addEventListener('change', (e) => {
-    currentColor = e.target.value;
-    contexts.forEach(ctx => ctx.strokeStyle = currentColor);
+    const sanitized = sanitizeColor(e.target.value);
+    currentColor = sanitized;
+    e.target.value = sanitized; // Uppdatera UI om värdet korrigerades
+    contexts.forEach(ctx => ctx.strokeStyle = sanitized);
 });
 
 // Penselstorlek
 document.getElementById('brushSize').addEventListener('input', (e) => {
-    currentBrushSize = e.target.value;
-    contexts.forEach(ctx => ctx.lineWidth = currentBrushSize);
-    document.getElementById('brushSizeValue').textContent = currentBrushSize + 'px';
+    const sanitized = sanitizeBrushSize(e.target.value);
+    currentBrushSize = sanitized;
+    e.target.value = sanitized;
+    contexts.forEach(ctx => ctx.lineWidth = sanitized);
+    document.getElementById('brushSizeValue').textContent = sanitized + 'px';
 });
 
 // Verktygsknappar
@@ -543,10 +741,35 @@ document.getElementById('layer0Btn').addEventListener('click', () => setActiveLa
 document.getElementById('layer1Btn').addEventListener('click', () => setActiveLayer(1));
 
 // Åtgärdsknappar
-document.getElementById('clearBtn').addEventListener('click', clearCanvas);
+document.getElementById('clearBtn').addEventListener('click', showClearConfirmation);
 document.getElementById('undoBtn').addEventListener('click', undo);
 document.getElementById('redoBtn').addEventListener('click', redo);
 document.getElementById('saveBtn').addEventListener('click', savePainting);
+
+// Bekräftelsedialog-knappar
+document.getElementById('confirmYes').addEventListener('click', handleConfirmedClear);
+document.getElementById('confirmNo').addEventListener('click', hideClearConfirmation);
+
+// Stäng modal vid klick utanför
+document.getElementById('confirmModal').addEventListener('click', (e) => {
+    if (e.target.id === 'confirmModal') {
+        hideClearConfirmation();
+    }
+});
+
+// Responsiv toolbar-toggle
+document.getElementById('toolbarToggle').addEventListener('click', () => {
+    const content = document.getElementById('toolbarContent');
+    const toggleText = document.getElementById('toolbarToggleText');
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        toggleText.textContent = 'Dölj verktyg ▲';
+    } else {
+        content.classList.add('hidden');
+        toggleText.textContent = 'Visa verktyg ▼';
+    }
+});
 
 // ========================================
 // STARTA APPLIKATIONEN

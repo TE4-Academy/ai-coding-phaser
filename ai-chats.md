@@ -167,7 +167,52 @@ Kvalitetskrav
 * Inga antaganden utan förklaring
 * Inga onödiga bibliotek
 
+### Claude
+- https://claude.ai/share/029c050b-0532-44b8-86e2-d49930927ca3
+**Prompt 1**
+---
+Du är en senior frontend-utvecklare med djup erfarenhet av HTML5 Canvas, JavaScript, Tailwind CSS och att bygga barnvänliga webbapplikationer.
+Jag har ett befintligt ritprogram byggt med HTML, Tailwind CSS och JavaScript. Programmet använder canvas, flera lager, verktyg som pensel och flood fill, samt laddar Tailwind via CDN.
+Nedan följer en lista med identifierade brister och förbättringsområden i min nuvarande kod. Du får inte ifrågasätta, ändra eller ta bort några punkter. Din uppgift är att implementera lösningar för exakt dessa punkter genom att skriva tydlig, robust och pedagogisk kod som kan integreras i en existerande applikation.
+Krav på ditt svar:
+* Föreslå konkreta kodförändringar (HTML, JavaScript och/eller Tailwind).
+* Visa kodexempel där det är relevant.
+* Dela upp svaret i tydliga sektioner som exakt motsvarar varje punkt i listan.
+* Anpassa lösningarna för en målgrupp 5–13 år där det anges.
+* Prioritera robusthet, säkerhet, prestanda och tydlig UX.
+* Anta att koden körs i webbläsaren utan ramverk (ingen React/Vue).
+Säkerhet och Robusthet
+Saknad källverifiering (CDN) Tailwind laddas via en extern CDN utan integrity-attribut (Subresource Integrity). Om CDN-tjänsten komprometteras kan skadlig kod injiceras i applikationen.
+Exponering för injektion via Console Variabler som currentBrushSize och currentColor valideras inte. En användare kan via konsolen sätta värden som förstör renderingslogiken (t.ex. negativa penselstorlekar eller ogiltiga färgkoder).
+Förbättringsområden: Målgrupp 5–13 år
+Saknat touch-stöd Programmet lyssnar endast på mus-events (mousedown, mousemove, etc.). Barn i denna ålder använder i stor utsträckning surfplattor eller pekskärmar där touchstart och touchmove krävs för att kunna rita.
+Lagersystemets logik vid rensning Funktionen clearCanvas fyller det aktiva lagret med vit färg. Om ett barn ritar på Lager 1 och sedan rensar det, blir Lager 1 helt vitt och täcker därmed Lager 0 helt (transparensen försvinner). Det vore mer logiskt att rensa till transparent på alla lager utom bakgrundslagret.
+Destruktiva knappar utan bekräftelse Knappen "Rensa" (Clear) raderar allt arbete direkt. För barn som råkar klicka fel krävs en dialogruta ("Vill du verkligen rensa?") eller en mycket tydlig Undo-funktion som de förstår.
+Visuell feedback för aktivt verktyg Även om knappar ändrar färg är kontrasten i Tailwind-standard (blue-500 mot gray-200) ibland för svag för yngre barn eller barn med synnedsättning. Markeringen av vilket verktyg som är valt behöver vara tydligare.
+Flood Fill-prestanda En stack-baserad flood fill i ren JavaScript kan frysa UI-tråden i flera sekunder om ytan är komplex eller stor, vilket leder till att barnet klickar upprepade gånger och riskerar att krascha fliken.
+Gränssnittets layout Verktygsfältet tar upp mycket vertikal plats. På mindre skärmar (som Chromebooks i skolan) blir själva ritytan (canvas) väldigt liten eftersom verktygsfälten inte är kollapsbara eller anpassade för små skärmar.
+Slutmål
+Efter dina ändringar ska koden vara:
+* Säkrare mot manipulation
+* Stabilare vid extrema användarfall
+* Anpassad för barn
+* Prestandamässigt trygg
+* Enkel att läsa och vidareutveckla
+Skriv ditt svar som om det ska användas direkt i ett riktigt projekt.
 
+### Claude
+- https://claude.ai/share/25b5da26-f8e6-4796-856d-de4a799003fc
+**Prompt 1**
+---
+I detta ritprogram så är där man målar och själva muspekaren/fingrets position inte korrekt. Där muspekaren/fingret är hamnar inte färgen man ritar med.
+
+Agera som erfaren js, html och tailwind css testare och fullstack utvecklare.
+
+Hitta problemet som gör så att ritningen inte hamnar på korrekt ställe och åtgärda det problemet med de medel du anser vara nödvändiga.
+
+Försökt att endast lösa problemet.
+
+Gå stegvis igenom din lösning och implementera lösningen i filerna jag lagt in.
 
 ### Gemini
 

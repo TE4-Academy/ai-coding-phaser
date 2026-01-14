@@ -13,6 +13,13 @@ Jag ska skriva en prompt till en ai för att den ska hjälpa mig utveckla ett ri
 ---
 fungerade bra. Nu vill jag bygga vidare på detta. Skapa en till prompt jag kan ge till claude för att förbättra programmet. Jag vill att detta också ska finnas med: Lägga till former, (kvadrat, triangel och cirkel) Kunna sudda Ett verktyg för att fylla i såsom en hink. Olika lager man kan rita på. Kunna spara sin målning på datan. Just nu går det inte att bara klicka för att rita, man måste alltså hålla i och dra minst 1 pixel.
 
+### ChatGPT
+- https://chatgpt.com/share/696778ae-4b84-800a-976c-6156009ac2fa
+
+**Prompt 1**
+---
+Jag har infogat lista.md som du ska använda dig av. Du ska agera som erfaren promptare som har arbetat med att prompta claude under längre tid för att få tydliga och användbara svar. Jag har bett en ai att skapa en lista med förbättringsområden samt brister i kod jag har skrivit för ett ritprogram med html, tailwind css och javascript. Jag förväntar mig en tydlig och välstrukuterad prompt som claude kommer förstå och kunna använda till att skriva bra kod som jag sedan kan implementera i min applikation. Du ska inte ändra på några av punkterna i listan och ska endast använda dig av listan för att skapa en meningsfull prompt.
+
 ## Claude
 - https://claude.ai/share/9c63e8b9-4eb1-4028-8d7c-94d1f82a73b4
 
@@ -159,3 +166,19 @@ Kvalitetskrav
 * Lätt att bygga vidare på (undo/redo, fler verktyg etc.)
 * Inga antaganden utan förklaring
 * Inga onödiga bibliotek
+
+
+
+### Gemini
+
+https://gemini.google.com/share/082ae2771e0e
+
+**Prompt 1**
+---
+Du är en erfaren testare på ett företag som har erfarenhet av testa ritprogram med målgruppen 5-13 åringar.
+
+Jag har skapat ett ritprogram och vill att du ska finna både brister med säkerheten samt förbättringsområden. Jag har använt mig av html, tailwind css och javascript för att skapa denna applikation.
+
+Du ska ge mig en lista med de brister och förbättringsområden du finner som jag sedan ska vidare befordra till en annan AI som ska formulera om listan till en tydlig prompt.
+
+Du ska inte ändra i koden eller ta fram någon lösning, endast skapa en lista med de brister du finner samt förbättringsområden. Gissa inte och fråga om du blir osäker.

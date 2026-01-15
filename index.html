@@ -3,120 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paint - Ritprogram v2</title>
-    <script 
-        src="https://cdn.tailwindcss.com"></script>
+    <title>Paint - Ritprogram för barn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Applicerar det nya typsnittet på hela sidan */
+        body {
+            font-family: 'Fredoka', sans-serif;
+        }
+        /* Anpassar range-slidern (storleksväljaren) för att vara tjockare och enklare att greppa */
+        input[type=range] {
+            height: 24px;
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #6366f1; /* Indigo-500 */
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
         .tool-btn, .layer-btn {
-            transition: all 0.2s ease-in-out;
+            transition: none; /* Tog bort transition för en mer direkt känsla, enligt önskemål om statisk look */
         }
         .tool-btn:active, .layer-btn:active {
-            transform: scale(0.95);
+            transform: translateY(2px); /* Fysisk "tryck"-effekt */
+            border-bottom-width: 0px; /* Tar bort 3D-kanten vid klick */
+            margin-top: 2px; /* Justerar position för att matcha */
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
-    
-    <!-- Verktygsfält -->
-    <div class="bg-white shadow-md">
-        <!-- Toggle-knapp för mobil (endast synlig på små skärmar) -->
+<body class="bg-sky-100 min-h-screen flex flex-col bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+    <div class="bg-white/90 border-b-4 border-sky-300 shadow-xl z-30">
         <button 
             id="toolbarToggle" 
-            class="lg:hidden w-full p-3 bg-blue-500 text-white font-bold flex items-center justify-center gap-2"
+            class="lg:hidden w-full p-4 bg-indigo-500 text-white font-bold text-xl flex items-center justify-center gap-2 border-b-4 border-indigo-700"
         >
-            <span id="toolbarToggleText">Visa verktyg ▼</span>
+            <span id="toolbarToggleText">Öppna verktygslådan 🎨</span>
         </button>
         
-        <!-- Själva verktygsfältet -->
         <div id="toolbarContent" class="p-4 lg:block hidden">
-            <div class="max-w-6xl mx-auto">
+            <div class="max-w-7xl mx-auto">
                 
-                <!-- Rad 1: Verktyg -->
-                <div class="flex flex-wrap items-center gap-2 lg:gap-3 mb-3 pb-3 border-b border-gray-200">
-                    <span class="text-xs lg:text-sm font-medium text-gray-700 w-full lg:w-auto">Verktyg:</span>
+                <div class="flex flex-wrap items-center gap-3 lg:gap-4 mb-4 pb-4 border-b-2 border-dashed border-sky-200">
+                    <span class="text-lg font-bold text-indigo-600 w-full lg:w-auto mr-2">Välj verktyg:</span>
                     
-                    <button id="brushTool" class="tool-btn px-2 lg:px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-xs lg:text-sm ring-4 ring-blue-300 shadow-lg">
+                    <button id="brushTool" class="tool-btn px-4 py-3 bg-indigo-500 text-white rounded-2xl text-base font-bold border-2 border-indigo-600 border-b-4 ring-2 ring-indigo-300 ring-offset-2">
                         🖌️ Pensel
                     </button>
-                    <button id="eraserTool" class="tool-btn px-2 lg:px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-xs lg:text-sm shadow-sm">
+                    <button id="eraserTool" class="tool-btn px-4 py-3 bg-white text-indigo-600 rounded-2xl text-base font-bold border-2 border-indigo-100 border-b-4 hover:bg-indigo-50">
                         🧹 Sudd
                     </button>
-                    <button id="rectangleTool" class="tool-btn px-2 lg:px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-xs lg:text-sm shadow-sm">
+                    <button id="rectangleTool" class="tool-btn px-4 py-3 bg-white text-indigo-600 rounded-2xl text-base font-bold border-2 border-indigo-100 border-b-4 hover:bg-indigo-50">
                         ⬜ Kvadrat
                     </button>
-                    <button id="circleTool" class="tool-btn px-2 lg:px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-xs lg:text-sm shadow-sm">
+                    <button id="circleTool" class="tool-btn px-4 py-3 bg-white text-indigo-600 rounded-2xl text-base font-bold border-2 border-indigo-100 border-b-4 hover:bg-indigo-50">
                         ⭕ Cirkel
                     </button>
-                    <button id="triangleTool" class="tool-btn px-2 lg:px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-xs lg:text-sm shadow-sm">
+                    <button id="triangleTool" class="tool-btn px-4 py-3 bg-white text-indigo-600 rounded-2xl text-base font-bold border-2 border-indigo-100 border-b-4 hover:bg-indigo-50">
                         🔺 Triangel
                     </button>
-                    <button id="fillTool" class="tool-btn px-2 lg:px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-xs lg:text-sm shadow-sm">
+                    <button id="fillTool" class="tool-btn px-4 py-3 bg-white text-indigo-600 rounded-2xl text-base font-bold border-2 border-indigo-100 border-b-4 hover:bg-indigo-50">
                         🪣 Fyll
                     </button>
                 </div>
 
-                <!-- Rad 2: Inställningar och åtgärder -->
-                <div class="flex flex-wrap items-center gap-3 lg:gap-4">
+                <div class="flex flex-wrap items-center gap-4 lg:gap-6">
                     
-                    <!-- Färgväljare -->
-                    <div class="flex items-center gap-2">
-                        <label for="colorPicker" class="text-xs lg:text-sm font-medium text-gray-700">Färg:</label>
+                    <div class="flex items-center gap-3 bg-orange-50 px-4 py-2 rounded-2xl border-2 border-orange-200">
+                        <label for="colorPicker" class="text-base font-bold text-orange-600">Färg:</label>
                         <input 
                             type="color" 
                             id="colorPicker" 
                             value="#000000"
-                            class="w-10 h-10 lg:w-12 lg:h-10 rounded cursor-pointer border-2 border-gray-300"
+                            class="w-12 h-12 rounded-full cursor-pointer border-4 border-white shadow-sm overflow-hidden"
+                            style="padding: 0;"
                         >
                     </div>
 
-                    <!-- Penselstorlek -->
-                    <div class="flex items-center gap-2 w-full lg:w-auto">
-                        <label for="brushSize" class="text-xs lg:text-sm font-medium text-gray-700">Storlek:</label>
+                    <div class="flex items-center gap-3 bg-purple-50 px-4 py-2 rounded-2xl border-2 border-purple-200 w-full lg:w-auto flex-grow lg:flex-grow-0">
+                        <label for="brushSize" class="text-base font-bold text-purple-600">Tjocklek:</label>
                         <input 
                             type="range" 
                             id="brushSize" 
                             min="1" 
                             max="50" 
                             value="5"
-                            class="flex-1 lg:w-32"
+                            class="flex-1 lg:w-40"
                         >
-                        <span id="brushSizeValue" class="text-xs lg:text-sm font-medium text-gray-600 w-10">5px</span>
+                        <span id="brushSizeValue" class="text-lg font-bold text-purple-600 w-12 text-center bg-white rounded-lg py-1 border border-purple-100">5</span>
                     </div>
 
-                    <!-- Lagerväljare -->
-                    <div class="flex items-center gap-2 w-full lg:w-auto">
-                        <span class="text-xs lg:text-sm font-medium text-gray-700">Lager:</span>
-                        <button id="layer0Btn" class="layer-btn px-2 lg:px-3 py-1 bg-blue-600 text-white rounded text-xs lg:text-sm ring-4 ring-blue-300 font-bold flex-1 lg:flex-none">
-                            Lager 0
+                    <div class="flex items-center gap-2 w-full lg:w-auto bg-sky-50 p-2 rounded-2xl border-2 border-sky-100">
+                        <span class="text-sm font-bold text-sky-600 px-2">Lager:</span>
+                        <button id="layer0Btn" class="layer-btn px-4 py-2 bg-sky-500 text-white rounded-xl text-sm font-bold border-b-4 border-sky-700 flex-1 lg:flex-none">
+                            1
                         </button>
-                        <button id="layer1Btn" class="layer-btn px-2 lg:px-3 py-1 bg-gray-200 text-gray-700 rounded text-xs lg:text-sm flex-1 lg:flex-none">
-                            Lager 1
+                        <button id="layer1Btn" class="layer-btn px-4 py-2 bg-white text-sky-600 rounded-xl text-sm font-bold border-b-4 border-sky-200 flex-1 lg:flex-none hover:bg-sky-100">
+                            2
                         </button>
                     </div>
 
-                    <!-- Knappar -->
-                    <div class="flex gap-2 w-full lg:w-auto lg:ml-auto">
+                    <div class="flex gap-3 w-full lg:w-auto lg:ml-auto mt-2 lg:mt-0">
                         <button 
                             id="undoBtn"
-                            class="flex-1 lg:flex-none px-3 lg:px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed text-xs lg:text-sm"
+                            class="flex-1 lg:flex-none px-4 py-2 bg-amber-400 text-white rounded-xl font-bold border-b-4 border-amber-600 hover:bg-amber-500 disabled:bg-gray-300 disabled:border-gray-400 disabled:text-gray-500"
+                            title="Ångra"
                         >
-                            Ångra
+                            ↩️ Ångra
                         </button>
                         <button 
                             id="redoBtn"
-                            class="flex-1 lg:flex-none px-3 lg:px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed text-xs lg:text-sm"
+                            class="flex-1 lg:flex-none px-4 py-2 bg-amber-400 text-white rounded-xl font-bold border-b-4 border-amber-600 hover:bg-amber-500 disabled:bg-gray-300 disabled:border-gray-400 disabled:text-gray-500"
+                            title="Gör om"
                         >
-                            Gör om
+                            ↪️ Gör om
                         </button>
                         <button 
                             id="clearBtn"
-                            class="flex-1 lg:flex-none px-3 lg:px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition text-xs lg:text-sm"
+                            class="flex-1 lg:flex-none px-4 py-2 bg-rose-500 text-white rounded-xl font-bold border-b-4 border-rose-700 hover:bg-rose-600"
                         >
-                            Rensa
+                            🗑️ Rensa
                         </button>
                         <button 
                             id="saveBtn"
-                            class="flex-1 lg:flex-none px-3 lg:px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition text-xs lg:text-sm"
+                            class="flex-1 lg:flex-none px-4 py-2 bg-emerald-500 text-white rounded-xl font-bold border-b-4 border-emerald-700 hover:bg-emerald-600"
                         >
                             💾 Spara
                         </button>
@@ -126,10 +148,9 @@
         </div>
     </div>
 
-    <!-- Canvas-område med responsiv storlek -->
-    <div class="flex-1 flex items-center justify-center p-2 lg:p-4">
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden relative" 
-             style="width: min(800px, 100%); height: min(600px, calc(100vh - 200px));">
+    <div class="flex-1 flex items-center justify-center p-4 lg:p-8">
+        <div class="bg-white shadow-2xl rounded-3xl overflow-hidden relative border-8 border-yellow-300" 
+             style="width: min(800px, 100%); height: min(600px, calc(100vh - 250px)); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
             <canvas 
                 id="layer0" 
                 width="800" 
@@ -154,26 +175,25 @@
         </div>
     </div>
 
-    <!-- Bekräftelsedialog för rensning -->
-    <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4">
-            <div class="text-center mb-6">
-                <div class="text-6xl mb-4">⚠️</div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Vill du verkligen rensa?</h2>
-                <p class="text-gray-600">Allt du har ritat kommer att försvinna!</p>
+    <div id="confirmModal" class="hidden fixed inset-0 bg-indigo-900 bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md mx-4 border-b-8 border-indigo-200">
+            <div class="text-center mb-8">
+                <div class="text-7xl mb-4">🤔</div>
+                <h2 class="text-3xl font-bold text-indigo-600 mb-3">Vill du börja om?</h2>
+                <p class="text-gray-500 text-lg font-medium">Om du trycker på "Ja" så försvinner din teckning.</p>
             </div>
-            <div class="flex gap-4">
+            <div class="flex flex-col gap-4">
                 <button 
                     id="confirmNo" 
-                    class="flex-1 px-6 py-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-xl font-bold"
+                    class="w-full px-6 py-4 bg-emerald-500 text-white rounded-2xl hover:bg-emerald-600 transition-none border-b-4 border-emerald-700 text-xl font-bold"
                 >
-                    ❌ Nej, behåll min ritning!
+                    😅 Nej, jag vill ha kvar den!
                 </button>
                 <button 
                     id="confirmYes" 
-                    class="flex-1 px-6 py-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-xl font-bold"
+                    class="w-full px-6 py-3 bg-rose-100 text-rose-600 rounded-2xl hover:bg-rose-200 transition-none border-b-4 border-rose-200 text-lg font-bold"
                 >
-                    ✓ Ja, rensa
+                    Ja, ta bort allt
                 </button>
             </div>
         </div>

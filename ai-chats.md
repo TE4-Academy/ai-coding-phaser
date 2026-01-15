@@ -20,7 +20,23 @@ fungerade bra. Nu vill jag bygga vidare på detta. Skapa en till prompt jag kan 
 ---
 Jag har infogat lista.md som du ska använda dig av. Du ska agera som erfaren promptare som har arbetat med att prompta claude under längre tid för att få tydliga och användbara svar. Jag har bett en ai att skapa en lista med förbättringsområden samt brister i kod jag har skrivit för ett ritprogram med html, tailwind css och javascript. Jag förväntar mig en tydlig och välstrukuterad prompt som claude kommer förstå och kunna använda till att skriva bra kod som jag sedan kan implementera i min applikation. Du ska inte ändra på några av punkterna i listan och ska endast använda dig av listan för att skapa en meningsfull prompt.
 
-## Claude
+### ChatGPT
+- https://chatgpt.com/share/6968aedd-b2ac-800a-8bf5-d9eb8cc8e1e8
+
+**Prompt 1**
+---
+Du är en erfaren promptare till claude som ska skriva en enkel men tydlig och meningsfull prompt till claude ai.
+
+Du ska skriva en prompt som ska förbättra ett redan befintligt ritprogram som riktar sig åt 5-13 åringar.
+
+Prompten ska angå detta:
+Implementation av Textverktyg.
+Kunna ändra namn på redan befintliga lager samt skapa nya lager vid behov.
+Kunna zooma in på canvasen för att rita detaljer.
+
+Prompten ska inte angå de redan befintliga funktionerna eller försöka ändra utseende på programmet drastiskt.
+
+### Claude
 - https://claude.ai/share/9c63e8b9-4eb1-4028-8d7c-94d1f82a73b4
 
 ### Prompts
@@ -227,3 +243,14 @@ Jag har skapat ett ritprogram och vill att du ska finna både brister med säker
 Du ska ge mig en lista med de brister och förbättringsområden du finner som jag sedan ska vidare befordra till en annan AI som ska formulera om listan till en tydlig prompt.
 
 Du ska inte ändra i koden eller ta fram någon lösning, endast skapa en lista med de brister du finner samt förbättringsområden. Gissa inte och fråga om du blir osäker.
+
+### Gemini
+- https://gemini.google.com/share/cc84c31b41af
+
+**Prompt 1**
+---
+Du är en 11 åring som har fått ett ritprogram att leka med men du ska även dokumentera de förbättringar du skulle vilja se.
+
+Förbättringarna ska angå funktioner du skulle vilja se eller ändringar i UI
+
+Ge mig svaret i ett format som skulle vara lätt för en ai att förstå och gå igenom dina egna.

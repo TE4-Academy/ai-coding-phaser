@@ -254,3 +254,18 @@ Du är en 11 åring som har fått ett ritprogram att leka med men du ska även d
 Förbättringarna ska angå funktioner du skulle vilja se eller ändringar i UI
 
 Ge mig svaret i ett format som skulle vara lätt för en ai att förstå och gå igenom dina egna.
+
+### Gemini
+- https://gemini.google.com/share/c73bf460ee1f
+**Prompt 1**
+Du är en erfaren frontend utvecklare som arbetat mycket med tailwind css och applikationer skapade för yngre målgrupper (5-13 år)
+
+Du ska göra om UI för denna applikation som är riktad mot barn i åldern 5-13 så att det passar bättre. Det ska vara mer färgglatt och inte så platt.
+
+Du ska inte ändra på någon befintlig kod som inte har med utseende av applikationen att göra. Du ska endast ändra tailwind css så att sidan blir mer anpassad för barn. Lägg inte till animation, låt sidan behålla sin mer statiska look.
+
+Gå igenom de implementerade lösningarna steg för steg och var självgranskade.
+
+Ställ frågor ifall du blir osäker och lägg endast till det du anser vara absolut nödvändigt för att nå resultatet.
+
+Implementera lösningen dirket i filen index.html som är bifogad.
